@@ -1,0 +1,27 @@
+services:
+  cassandra:
+    image: cassandra:latest
+    container_name: cassandra
+    ports:
+      - "9042:9042"
+    networks:
+      - cassandra_network
+
+  nestjs:
+    build:
+      context: .  # Ensure this is the root directory where your Dockerfile is located
+      dockerfile: Dockerfile
+    container_name: nestjs_app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - cassandra
+    environment:
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_PORT: 9042
+    networks:
+      - cassandra_network
+
+networks:
+  cassandra_network:
+    driver: bridge
