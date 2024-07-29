@@ -9,6 +9,7 @@ export class UserController {
 
   @Post('login')
   create(@Body() userLoginDto: UserLoginDto) {
+    console.log(userLoginDto);
     return this.userService.login(userLoginDto);
   }
   @Post('signup')

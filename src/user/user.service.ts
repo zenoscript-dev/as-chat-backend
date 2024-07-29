@@ -66,9 +66,15 @@ export class UserService {
       const token = await this.generateToken(user);
 
       // If everything is fine, return a success message or a JWT token
-      return { message: 'Logged in successfully', token };
+      return {
+        message: 'Logged in successfully',
+        token,
+        id:
+          user.id === process.env.ASHOK
+            ? process.env.RECIEVER
+            : process.env.ASHOK,
+      };
     } catch (error) {
-      console.log(error);
       // Handle any unexpected errors
       throw new HttpException(
         error.message,
@@ -92,7 +98,6 @@ export class UserService {
       );
       return signedJwt;
     } catch (error) {
-      console.log(error);
       throw new HttpException(
         'failed to generate token',
         HttpStatus.INTERNAL_SERVER_ERROR,

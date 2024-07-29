@@ -20,4 +20,8 @@ export class User extends Base {
   @Column({ nullable: false })
   @IsString()
   password: string;
+
+  @Column({ nullable: true })
+  @IsString()
+  chatid: string;
 }
