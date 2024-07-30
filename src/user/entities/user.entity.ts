@@ -1,9 +1,8 @@
 import { IsEmail, IsString } from 'class-validator';
-import { Base } from 'src/core/models/base.model';
 import { PrimaryGeneratedColumn, Column, Entity, Index } from 'typeorm';
 
 @Entity('users')
-export class User extends Base {
+export class User {
   @PrimaryGeneratedColumn('uuid')
   @Index('IDX_USER_ID')
   id: string;

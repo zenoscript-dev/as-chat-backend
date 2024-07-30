@@ -85,7 +85,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const parsedMessage = JSON.parse(message);
 
       if (parsedMessage.recieverId) {
-        console.log(this.users);
         const receiver = await this.userRepository.findOneBy({
           id: parsedMessage.recieverId,
         });

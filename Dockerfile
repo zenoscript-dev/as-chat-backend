@@ -35,7 +35,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/.env ./
 
 # Expose the port the app runs on
-EXPOSE 3101
+EXPOSE 3300
 
 # Start the application
 CMD ["node", "dist/main"]

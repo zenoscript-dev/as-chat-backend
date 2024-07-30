@@ -13,7 +13,7 @@ import { User } from './user/entities/user.entity';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
+      host: 'sql12.freesqldatabase.com',
       port: 3306,
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
@@ -22,7 +22,7 @@ import { User } from './user/entities/user.entity';
       synchronize: true,
     }),
     ChatModule,
-    CassandraModule,
+    // CassandraModule,
     UserModule,
   ],
   controllers: [AppController],
