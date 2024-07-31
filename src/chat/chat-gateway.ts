@@ -9,17 +9,19 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { v4 as uuidv4 } from 'uuid';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @WebSocketGateway(3200, { cors: { origin: '*' } })
 @ApiBearerAuth('JWT-auth')
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private users: { id: number; clientId: string }[] = [];
+  @Inject(CACHE_MANAGER) private cacheManager: Cache;
 
   constructor(
     private readonly jwtService: JwtService,
@@ -51,8 +53,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       user.chatid = client.id;
+      await this.cacheManager.set(user.id, client.id, 86400 * 5);
 
-      await this.userRepository.save(user);
+      // await this.userRepository.save(user);
     } catch (error) {
       console.error('Error handling connection:', error.message);
       client.emit('error', { message: 'Invalid token. Please log in again.' });
@@ -66,7 +69,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const user = await this.userRepository.findOneBy({ chatid: client.id });
       if (user) {
         // Clear the chatid for the user
-        await this.userRepository.update({ id: user.id }, { chatid: null });
+        // await this.userRepository.update({ id: user.id }, { chatid: null });
+        await this.cacheManager.set(user.id, '', 86400 * 5);
       }
 
       // Remove the user from the connected users list
@@ -85,9 +89,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const parsedMessage = JSON.parse(message);
 
       if (parsedMessage.recieverId) {
-        const receiver = await this.userRepository.findOneBy({
-          id: parsedMessage.recieverId,
-        });
+        const receiver = (await this.cacheManager.get(
+          parsedMessage.recieverId,
+        )) as string;
 
         if (receiver) {
           const formattedMessage = {
@@ -96,12 +100,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             createdAt: new Date(),
             user: {
               _id: parsedMessage.senderId, // ID of the sender
-              name: receiver.username, // Fetch or set the sender's name dynamically
+              name: parsedMessage.recieverId, // Fetch or set the sender's name dynamically
               avatar: 'https://placeimg.com/140/140/any', // Fetch or set the sender's avatar dynamically
             },
           };
 
-          client.to(receiver.chatid).emit('reply', formattedMessage); // Emit formatted message
+          client.to(receiver).emit('reply', formattedMessage); // Emit formatted message
         } else {
           client.emit('error', { message: 'Recipient not found.' });
         }

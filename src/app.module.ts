@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { ChatModule } from './chat/chat.module';
-import { CassandraModule } from './cassandra/cassandra.module';
+// import { CassandraModule } from './cassandra/cassandra.module';
 import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
+// import * as redisStore from 'cache-manager-redis-store';
 
 @Module({
   imports: [
@@ -22,6 +24,9 @@ import { User } from './user/entities/user.entity';
       synchronize: true,
     }),
     ChatModule,
+    CacheModule.register({
+      isGlobal: true,
+    }),
     // CassandraModule,
     UserModule,
   ],
